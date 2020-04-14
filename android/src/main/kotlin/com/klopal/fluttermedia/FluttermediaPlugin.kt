@@ -103,13 +103,6 @@ public class FlutterMediaPlugin(private val registrar: Registrar) : MethodCallHa
                     result.error("PERMISSION_DENIED", "", null)
                 }
             }
-
-            // Add other 'when' lines to check for other
-            // permissions this app might request.
-            else -> {
-                // Ignore all other requests.
-                result.success("[]") // Send empty images
-            }
         }
 
         return true
