@@ -13,7 +13,6 @@ class FlutterMedia {
     try {
       var args = <String, dynamic>{'limit': limit ?? null};
       final resp = await _channel.invokeMethod('getImages', args);
-      print("Got images response form device $resp");
       final data = jsonDecode(resp);
       if (data is List) {
         data.forEach((res) => images.add(FlutterMediaImage.fromJson(res)));

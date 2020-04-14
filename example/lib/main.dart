@@ -26,7 +26,6 @@ class _MyAppState extends State<MyApp> {
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
       images = await FlutterMedia.images(limit: 2);
-      print("images ${images.length}");
     } on PlatformException {
       print("Failed to load images");
     }

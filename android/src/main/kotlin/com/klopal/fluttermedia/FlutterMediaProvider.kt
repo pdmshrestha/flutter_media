@@ -102,8 +102,6 @@ class FlutterMediaProvider(private val activity: Activity) {
                 val displayName = cursor.getString(displayNameColumn)
                 val data = cursor.getString(dataColumn)
 
-                Log.v(TAG, "$idColumn, $displayNameColumn, $dateTakenColumn, $dataColumn")
-
                 /**
                  * This is one of the trickiest parts:
                  *
@@ -120,9 +118,6 @@ class FlutterMediaProvider(private val activity: Activity) {
 
                 val image = MediaStoreImage(id, displayName, dateTaken, data)
                 images += image
-
-                // For debugging, we'll output the image objects we create to logcat.
-                Log.v(TAG, data)
             }
         }
 
