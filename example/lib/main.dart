@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'package:fluttermedia/fluttermedia.dart';
+import 'package:flutter_media/fluttermedia.dart';
 
 void main() => runApp(MyApp());
 

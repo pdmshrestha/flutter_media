@@ -13,10 +13,11 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugin.common.PluginRegistry.Registrar
+import java.lang.Exception
 
 
 /** FlutterMediaPlugin */
-public class FlutterMediaPlugin(private val registrar: Registrar) : MethodCallHandler, PluginRegistry.RequestPermissionsResultListener {
+class FlutterMediaPlugin(private val registrar: Registrar) : MethodCallHandler, PluginRegistry.RequestPermissionsResultListener {
 
     private var permissionsRequestCode = 123;
 
@@ -26,8 +27,9 @@ public class FlutterMediaPlugin(private val registrar: Registrar) : MethodCallHa
 
     private val flutterMediaProvider = FlutterMediaProvider(registrar.activity())
 
-    private lateinit var result: Result
-    private lateinit var call: MethodCall
+    private lateinit var imagesResult: Result
+    private lateinit var imagesCall: MethodCall
+    private  var isImagesReplySent: Boolean = false
 
 
     // This static function is optional and equivalent to onAttachedToEngine. It supports the old
@@ -50,8 +52,10 @@ public class FlutterMediaPlugin(private val registrar: Registrar) : MethodCallHa
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         if (call.method == "getImages") {
-            this.result = result
-            this.call = call
+
+            this.imagesResult = result
+            this.imagesCall = call
+            this.isImagesReplySent = false
 
             registrar.addRequestPermissionsResultListener(this)
 
@@ -73,7 +77,7 @@ public class FlutterMediaPlugin(private val registrar: Registrar) : MethodCallHa
                 // this thread waiting for the user's response! After the user
                 // sees the explanation, try again to request the permission.
                 Log.e(TAG, "Explanation needed")
-                result.error("PERMISSION_DENIED", "", null)
+               sendPermissionErrorMessage()
 
             } else {
                 // No explanation needed, we can request the permission.
@@ -100,8 +104,15 @@ public class FlutterMediaPlugin(private val registrar: Registrar) : MethodCallHa
                 } else {
                     // permission denied, boo!
                     Log.e(TAG, "Permission was denied")
-                    result.error("PERMISSION_DENIED", "", null)
+                    sendPermissionErrorMessage()
                 }
+            }
+
+            // Add other 'when' lines to check for other
+            // permissions this app might request.
+            else -> {
+                // Ignore all other requests.
+               sendEmptyImages() // Send empty images
             }
         }
 
@@ -110,9 +121,35 @@ public class FlutterMediaPlugin(private val registrar: Registrar) : MethodCallHa
 
 
     private fun sendImages() {
-        val limit = call.argument<Int>("limit")
-        val images = flutterMediaProvider.queryImages(limit)
-        result.success(gson?.toJson(images))
+        if (isImagesReplySent) return
+        try {
+            val limit = imagesCall.argument<Int>("limit")
+            val images = flutterMediaProvider.queryImages(limit)
+            imagesResult.success(gson?.toJson(images))
+            isImagesReplySent = true
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun sendEmptyImages() {
+        if (isImagesReplySent) return
+        try {
+            imagesResult.success("[]") // Send empty images
+            isImagesReplySent = true
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private  fun sendPermissionErrorMessage() {
+        if (isImagesReplySent) return
+        try {
+            imagesResult.error("PERMISSION_DENIED", "Storage permission was denied by user", null)
+            isImagesReplySent = true
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
 }
