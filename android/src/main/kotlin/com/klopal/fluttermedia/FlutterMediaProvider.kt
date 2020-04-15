@@ -6,16 +6,14 @@ import android.content.ContentProvider
 import android.content.ContentResolver
 import android.database.Cursor
 import android.provider.MediaStore
-import android.util.Log
 import java.text.SimpleDateFormat
 import java.util.*
 
 class FlutterMediaProvider(private val activity: Activity) {
 
+    fun queryImages(limit: Int?): ArrayList<HashMap<String, Any>> {
 
-    fun queryImages(limit: Int?): List<MediaStoreImage> {
-
-        val images = mutableListOf<MediaStoreImage>()
+        val allImageList: ArrayList<HashMap<String, Any>> = ArrayList()
 
         /**
          * A key concept when working with Android [ContentProvider]s is something called
@@ -33,8 +31,9 @@ class FlutterMediaProvider(private val activity: Activity) {
         val projection = arrayOf(
                 MediaStore.Images.Media._ID,
                 MediaStore.Images.Media.DISPLAY_NAME,
-                MediaStore.Images.Media.DATE_TAKEN,
-                MediaStore.Images.Media.DATA
+                MediaStore.Images.Media.DATA,
+                MediaStore.Images.Thumbnails.DATA,
+                MediaStore.Images.Media.SIZE
         )
 
         /**
@@ -71,6 +70,7 @@ class FlutterMediaProvider(private val activity: Activity) {
                 selectionArgs,
                 sortOrder
         )?.use { cursor ->
+
             /**
              * In order to retrieve the data from the [Cursor] that's returned, we need to
              * find which index matches each column that we're interested in.
@@ -88,41 +88,31 @@ class FlutterMediaProvider(private val activity: Activity) {
              * In either case, while this method isn't slow, we'll want to cache the results
              * to avoid having to look them up for each row.
              */
-            val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
-            val dateTakenColumn =
-                    cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_TAKEN)
-            val displayNameColumn =
+            val idCol = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
+            val dataCol = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+            val displayNameCol =
                     cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME)
-            val dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+
 
             while (cursor.moveToNext()) {
-                // Here we'll use the column indexs that we found above.
-                val id = cursor.getLong(idColumn)
-                val dateTaken = Date(cursor.getLong(dateTakenColumn))
-                val displayName = cursor.getString(displayNameColumn)
-                val data = cursor.getString(dataColumn)
 
-                /**
-                 * This is one of the trickiest parts:
-                 *
-                 * Since we're accessing images (using
-                 * [MediaStore.Images.Media.EXTERNAL_CONTENT_URI], we'll use that
-                 * as the base URI and append the ID of the image to it.
-                 *
-                 * This is the exact same way to do it when working with [MediaStore.Video] and
-                 * [MediaStore.Audio] as well. Whatever `Media.EXTERNAL_CONTENT_URI` you
-                 * query to get the items is the base, and the ID is the document to
-                 * request there.
-                 */
+                // Here we'll use the column indexes that we found above.
+                val id = cursor.getLong(idCol)
+                val displayName = cursor.getString(displayNameCol)
+                val data = cursor.getString(dataCol)
 
-
-                val image = MediaStoreImage(id, displayName, dateTaken, data)
-                images += image
+                val map = hashMapOf<String, Any>("id" to id, "data" to data, "displayName" to displayName)
+                allImageList.add(map)
             }
+
+            cursor.close()
         }
 
-        Log.v(TAG, "Found ${images.size} images")
-        return images
+        return allImageList
+    }
+
+
+    private fun getThumbnail() {
 
     }
 

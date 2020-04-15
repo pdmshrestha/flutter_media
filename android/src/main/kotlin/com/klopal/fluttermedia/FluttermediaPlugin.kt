@@ -5,7 +5,6 @@ import android.content.pm.PackageManager
 import androidx.annotation.NonNull
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.google.gson.Gson
 import io.flutter.Log
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -13,7 +12,6 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugin.common.PluginRegistry.Registrar
-import java.lang.Exception
 
 
 /** FlutterMediaPlugin */
@@ -22,8 +20,6 @@ class FlutterMediaPlugin(private val registrar: Registrar) : MethodCallHandler, 
     private var permissionsRequestCode = 123;
 
     private val permission = Manifest.permission.READ_EXTERNAL_STORAGE
-
-    private var gson: Gson? = Gson()
 
     private val flutterMediaProvider = FlutterMediaProvider(registrar.activity())
 
@@ -125,7 +121,8 @@ class FlutterMediaPlugin(private val registrar: Registrar) : MethodCallHandler, 
         try {
             val limit = imagesCall.argument<Int>("limit")
             val images = flutterMediaProvider.queryImages(limit)
-            imagesResult.success(gson?.toJson(images))
+            imagesResult.success(images)
+
             isImagesReplySent = true
         } catch (e: Exception) {
             e.printStackTrace()
