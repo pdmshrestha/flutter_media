@@ -3,7 +3,7 @@
 # Run `pod lib lint fluttermedia.podspec' to validate before publishing.
 #
 Pod::Spec.new do |s|
-  s.name             = 'fluttermedia'
+  s.name             = 'flutter_media'
   s.version          = '0.0.1'
   s.summary          = 'A new Flutter plugin.'
   s.description      = <<-DESC
